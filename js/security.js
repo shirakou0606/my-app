@@ -391,31 +391,26 @@ function validateDataIntegrity(data, expectedFields) {
 async function apiLogin(email, password) {
   const res = await fetch("/.netlify/functions/login", {
     method: "POST",
+    credentials: "include", // ★追加
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password })
   });
 
   const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(data.error || "ログインに失敗しました");
-  }
+  if (!res.ok) throw new Error(data.error || "ログインに失敗しました");
   return true;
 }
 
 async function apiMe() {
-  const res = await fetch("/.netlify/functions/me");
+  const res = await fetch("/.netlify/functions/me", {
+    credentials: "include" // ★追加
+  });
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok && data.loggedIn, data };
 }
 
 async function apiLogout() {
-  await fetch("/.netlify/functions/logout");
-}
-
-async function requireAuthOrRedirect() {
-  const me = await apiMe();
-  if (!me.ok) {
-    window.location.href = "/login.html";
-  }
+  await fetch("/.netlify/functions/logout", {
+    credentials: "include" // ★追加
+  });
 }
