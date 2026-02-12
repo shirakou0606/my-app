@@ -384,3 +384,38 @@ function validateDataIntegrity(data, expectedFields) {
     
     return true;
 }
+// ========================================
+// Netlify Functions + Supabase 認証（追加）
+// ========================================
+
+async function apiLogin(email, password) {
+  const res = await fetch("/.netlify/functions/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.error || "ログインに失敗しました");
+  }
+  return true;
+}
+
+async function apiMe() {
+  const res = await fetch("/.netlify/functions/me");
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok && data.loggedIn, data };
+}
+
+async function apiLogout() {
+  await fetch("/.netlify/functions/logout");
+}
+
+async function requireAuthOrRedirect() {
+  const me = await apiMe();
+  if (!me.ok) {
+    window.location.href = "/login.html";
+  }
+}
