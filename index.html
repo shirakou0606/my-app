@@ -457,7 +457,65 @@
         </div>
     </div>
 
-    <script src="js/security.js"></script>
+    <script src="js/security.js"></script><script>
+document.addEventListener("DOMContentLoaded", () => {
+  // 学習者ログイン
+  const loginBtn = document.getElementById("loginBtn");
+  if (loginBtn) {
+    loginBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("userName")?.value?.trim();
+      const email = document.getElementById("userEmail")?.value?.trim();
+      const password = document.getElementById("userPassword")?.value;
+
+      if (!name || !email || !password) {
+        alert("お名前・メール・パスワードを入力してください");
+        return;
+      }
+
+      try {
+        await apiLogin(email, password);
+        // UI側で使う分だけローカルに保持（これは“部分的に正解”）
+        localStorage.setItem("currentUserName", name);
+        localStorage.setItem("currentUserEmail", email);
+
+        alert("ログイン成功");
+        location.reload();
+      } catch (err) {
+        alert(err.message || "ログイン失敗");
+      }
+    });
+  }
+
+  // 管理者ログイン
+  const adminLoginBtn = document.getElementById("adminLoginBtn");
+  if (adminLoginBtn) {
+    adminLoginBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("adminName")?.value?.trim();
+      const email = document.getElementById("adminEmail")?.value?.trim();
+      const password = document.getElementById("adminPassword")?.value;
+
+      if (!name || !email || !password) {
+        alert("お名前・メール・パスワードを入力してください");
+        return;
+      }
+
+      try {
+        await apiLogin(email, password);
+        localStorage.setItem("currentAdminName", name);
+        localStorage.setItem("currentAdminEmail", email);
+
+        alert("管理者ログイン成功");
+        location.reload();
+      } catch (err) {
+        alert(err.message || "管理者ログイン失敗");
+      }
+    });
+  }
+});
+</script>
+
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
     <script src="js/scoring.js"></script>
