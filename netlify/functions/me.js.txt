@@ -1,0 +1,30 @@
+const { createClient } = require("@supabase/supabase-js");
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
+
+function getCookie(event, name) {
+  const cookie = event.headers.cookie || "";
+  const parts = cookie.split(";").map(v => v.trim());
+  const found = parts.find(p => p.startsWith(name + "="));
+  return found ? found.split("=")[1] : null;
+}
+
+exports.handler = async (event) => {
+  const token = getCookie(event, "session");
+  if (!token) {
+    return { statusCode: 401, body: JSON.stringify({ loggedIn: false }) };
+  }
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error) {
+    return { statusCode: 401, body: JSON.stringify({ loggedIn: false }) };
+  }
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ loggedIn: true, email: data.user.email })
+  };
+};

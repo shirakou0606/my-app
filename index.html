@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>営業・コミュニケーション学習支援システム</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- ローディング画面 -->
+        <div id="loading" class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>読み込み中...</p>
+        </div>
+
+        <!-- 学習者ログイン画面 -->
+        <div id="loginScreen" class="screen active">
+            <div class="login-container">
+                <div class="login-card">
+                    <div class="login-header">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h1>営業・コミュニケーション<br>学習支援システム</h1>
+                        <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.9;">学習者ログイン</p>
+                    </div>
+                    <div class="login-body">
+                        <div class="form-group">
+                            <label for="userName">お名前</label>
+                            <input type="text" id="userName" placeholder="山田太郎" required autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmail">メールアドレス</label>
+                            <input type="email" id="userEmail" placeholder="example@company.com" required autocomplete="email">
+                        </div>
+                        <button id="loginBtn" class="btn btn-primary btn-block">
+                            <i class="fas fa-sign-in-alt"></i> ログイン
+                        </button>
+                        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                            <a href="javascript:void(0)" id="adminLoginLink" onclick="window.switchToAdminLogin && window.switchToAdminLogin(); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; cursor: pointer; display: inline-block; padding: 10px; user-select: none;">
+                                <i class="fas fa-shield-alt"></i> 管理者の方はこちら
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理者ログイン画面 -->
+        <div id="adminLoginScreen" class="screen">
+            <div class="login-container">
+                <div class="login-card">
+                    <div class="login-header" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">
+                        <i class="fas fa-shield-alt"></i>
+                        <h1>管理者ログイン</h1>
+                        <p style="margin-top: 0.5rem; font-size: 0.9rem; opacity: 0.9;">認証が必要です</p>
+                    </div>
+                    <div class="login-body">
+                        <div class="form-group">
+                            <label for="adminName">お名前</label>
+                            <input type="text" id="adminName" placeholder="管理者名" required autocomplete="name">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminEmail">メールアドレス</label>
+                            <input type="email" id="adminEmail" placeholder="admin@company.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="adminPassword">管理者パスワード</label>
+                            <input type="password" id="adminPassword" placeholder="パスワードを入力" required autocomplete="current-password">
+                            <small style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.25rem; display: block;">
+                                <i class="fas fa-info-circle"></i> 初回ログイン時にパスワードを設定してください
+                            </small>
+                        </div>
+                        <button id="adminLoginBtn" class="btn btn-primary btn-block" style="background: #dc2626;">
+                            <i class="fas fa-sign-in-alt"></i> 管理者ログイン
+                        </button>
+                        <div style="text-align: center; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
+                            <a href="javascript:void(0)" id="learnerLoginLink" onclick="window.switchToLearnerLogin && window.switchToLearnerLogin(); return false;" style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; cursor: pointer; display: inline-block; padding: 10px; user-select: none;">
+                                <i class="fas fa-arrow-left"></i> 学習者ログインに戻る
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 管理者画面 -->
+        <div id="adminScreen" class="screen">
+            <nav class="navbar">
+                <div class="navbar-brand">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>学習支援システム - 管理者</span>
+                </div>
+                <div class="navbar-user">
+                    <span id="adminUserName"></span>
+                    <button id="adminLogoutBtn" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> ログアウト
+                    </button>
+                </div>
+            </nav>
+
+            <div class="container">
+                <div class="admin-tabs">
+                    <button class="tab-btn active" data-tab="questions">
+                        <i class="fas fa-question-circle"></i> 問題管理
+                    </button>
+                    <button class="tab-btn" data-tab="dashboard">
+                        <i class="fas fa-chart-line"></i> ダッシュボード
+                    </button>
+                </div>
+
+                <!-- 問題管理タブ -->
+                <div id="questionsTab" class="tab-content active">
+                    <!-- 自動問題生成 -->
+                    <div class="card">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h2><i class="fas fa-magic"></i> テキストから自動問題生成（推奨）</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-box" style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 1rem; margin-bottom: 1.5rem; border-radius: 0.5rem;">
+                                <p style="margin: 0; color: #1e40af;">
+                                    <i class="fas fa-info-circle"></i> 
+                                    <strong>簡単3ステップ：</strong>
+                                    学習テキストを貼り付けるだけで、自動的に5問（選択式3問＋記述式2問）が生成されます。
+                                </p>
+                            </div>
+                            
+                            <form id="autoGenerateForm">
+                                <div class="form-group">
+                                    <label for="autoCategory">
+                                        <i class="fas fa-tag"></i> カテゴリ選択（大カテゴリー）
+                                    </label>
+                                    <select id="autoCategory" required>
+                                        <option value="">選択してください</option>
+                                        <option value="営業">営業</option>
+                                        <option value="コミュニケーション">コミュニケーション</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="autoMidTopic">
+                                        <i class="fas fa-book"></i> 中トピック名
+                                        <span style="color: var(--text-secondary); font-weight: normal; margin-left: 0.5rem;">
+                                            （例：顧客ヒアリングの基本、プレゼンテーション技術など）
+                                        </span>
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        id="autoMidTopic" 
+                                        placeholder="中トピック名を入力してください"
+                                        required
+                                    />
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="sourceText">
+                                        <i class="fas fa-file-alt"></i> 学習テキスト（小トピックのタイトルと内容）
+                                        <span style="color: var(--text-secondary); font-weight: normal; margin-left: 0.5rem;">
+                                            （このテキストを元に問題が生成されます）
+                                        </span>
+                                    </label>
+                                    <textarea 
+                                        id="sourceText" 
+                                        rows="12" 
+                                        placeholder="営業やコミュニケーションに関する学習テキストを貼り付けてください。&#10;&#10;例：&#10;【タイトル】顧客の潜在ニーズを引き出す質問技法&#10;&#10;営業において最も重要なのは、顧客との信頼関係を構築することです。&#10;一方的な商品説明ではなく、顧客の課題や要望を深くヒアリングし...&#10;&#10;※ 200文字以上を推奨"
+                                        required
+                                        style="font-size: 0.95rem; line-height: 1.6;"
+                                    ></textarea>
+                                    <small style="color: var(--text-secondary); display: block; margin-top: 0.5rem;">
+                                        <i class="fas fa-lightbulb"></i> テキストが長いほど、質の高い問題が生成されます
+                                    </small>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-magic"></i> 5問を自動生成してプレビュー
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- プレビューエリア -->
+                            <div id="previewArea" style="display: none; margin-top: 2rem;">
+                                <div style="border-top: 2px solid var(--border-color); padding-top: 2rem;">
+                                    <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">
+                                        <i class="fas fa-eye"></i> 生成された問題のプレビュー
+                                    </h3>
+                                    <div id="previewContent"></div>
+                                    <div class="form-actions" style="margin-top: 2rem;">
+                                        <button id="saveGeneratedBtn" class="btn btn-success btn-lg">
+                                            <i class="fas fa-check-circle"></i> この5問をすべて保存
+                                        </button>
+                                        <button id="cancelPreviewBtn" class="btn btn-secondary">
+                                            <i class="fas fa-times"></i> キャンセル
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 手動問題作成 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-plus-circle"></i> 手動で問題を作成</h2>
+                        </div>
+                        <div class="card-body">
+                            <form id="questionForm">
+                                <div class="form-group">
+                                    <label for="questionTitle">問題タイトル</label>
+                                    <input type="text" id="questionTitle" required>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="questionCategory">カテゴリ</label>
+                                        <select id="questionCategory" required>
+                                            <option value="">選択してください</option>
+                                            <option value="営業">営業</option>
+                                            <option value="コミュニケーション">コミュニケーション</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="questionType">問題形式</label>
+                                        <select id="questionType" required>
+                                            <option value="">選択してください</option>
+                                            <option value="choice">選択式</option>
+                                            <option value="essay">記述式</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="questionText">問題文</label>
+                                    <textarea id="questionText" rows="4" required></textarea>
+                                </div>
+
+                                <!-- 選択式用 -->
+                                <div id="choicesSection" class="form-section" style="display: none;">
+                                    <label>選択肢</label>
+                                    <div id="choicesContainer"></div>
+                                    <button type="button" id="addChoiceBtn" class="btn btn-secondary btn-sm">
+                                        <i class="fas fa-plus"></i> 選択肢を追加
+                                    </button>
+                                </div>
+
+                                <div class="form-group" id="correctAnswerSection" style="display: none;">
+                                    <label for="correctAnswer">正解</label>
+                                    <input type="text" id="correctAnswer" placeholder="選択式の場合は正解の番号（例: 2）、記述式の場合は模範解答のポイント">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="explanation">解説・評価基準</label>
+                                    <textarea id="explanation" rows="6" placeholder="選択式: 各選択肢の解説&#10;記述式: 評価のポイント・視点" required></textarea>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 問題を保存
+                                    </button>
+                                    <button type="button" id="resetFormBtn" class="btn btn-secondary">
+                                        <i class="fas fa-redo"></i> リセット
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- 問題一覧 -->
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h2><i class="fas fa-list"></i> 登録済み問題</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="questionsList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ダッシュボードタブ -->
+                <div id="dashboardTab" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-users"></i> 学習者一覧</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="learnersList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学習者画面 -->
+        <div id="learnerScreen" class="screen">
+            <nav class="navbar">
+                <div class="navbar-brand">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>学習支援システム</span>
+                </div>
+                <div class="navbar-user">
+                    <span id="learnerUserName"></span>
+                    <button id="learnerLogoutBtn" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-sign-out-alt"></i> ログアウト
+                    </button>
+                </div>
+            </nav>
+
+            <div class="container">
+                <!-- 1. 大カテゴリー選択画面 -->
+                <div id="categorySelectView" class="view active">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-folder-open"></i> 学習カテゴリーを選択してください</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="categoryList" class="category-grid">
+                                <div class="category-card" data-category="営業">
+                                    <div class="category-icon">
+                                        <i class="fas fa-handshake"></i>
+                                    </div>
+                                    <h3>営業</h3>
+                                    <p>営業スキルの基礎から応用まで</p>
+                                    <div class="category-stats">
+                                        <span id="sales-topics-count">0トピック</span>
+                                    </div>
+                                </div>
+                                <div class="category-card" data-category="コミュニケーション">
+                                    <div class="category-icon">
+                                        <i class="fas fa-comments"></i>
+                                    </div>
+                                    <h3>コミュニケーション</h3>
+                                    <p>効果的なコミュニケーション技術</p>
+                                    <div class="category-stats">
+                                        <span id="communication-topics-count">0トピック</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 中トピック選択画面 -->
+                <div id="midTopicSelectView" class="view">
+                    <button id="backToCategoryBtn" class="btn btn-secondary mb-3">
+                        <i class="fas fa-arrow-left"></i> カテゴリー選択に戻る
+                    </button>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-book"></i> <span id="selectedCategoryName"></span> - 中トピックを選択</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="midTopicsList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 小トピック選択画面 -->
+                <div id="topicSelectView" class="view">
+                    <button id="backToMidTopicBtn" class="btn btn-secondary mb-3">
+                        <i class="fas fa-arrow-left"></i> 中トピック選択に戻る
+                    </button>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h2><i class="fas fa-book-open"></i> <span id="selectedMidTopicName"></span> - 小トピックを選択</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="topicsList"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- テスト開始確認画面 -->
+                <div id="testStartView" class="view">
+                    <button id="backToTopicsBtn" class="btn btn-secondary mb-3">
+                        <i class="fas fa-arrow-left"></i> トピック一覧に戻る
+                    </button>
+
+                    <div class="card">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h2><i class="fas fa-clipboard-check"></i> テスト開始</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="testStartContent"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- テスト実施画面 -->
+                <div id="testView" class="view">
+                    <!-- 進行状況バー -->
+                    <div class="test-progress-bar">
+                        <div class="progress-info">
+                            <span id="progressText">問 1/5</span>
+                            <span id="progressPercentage">20%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div id="progressBar" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <h2 id="currentQuestionTitle"></h2>
+                                <span id="currentQuestionScore" class="badge" style="background: #fbbf24; color: #78350f; font-size: 1rem;"></span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="question-content">
+                                <p id="currentQuestionText"></p>
+                            </div>
+
+                            <!-- 選択式 -->
+                            <div id="choiceAnswerSection" style="display: none;">
+                                <div id="choicesAnswerContainer"></div>
+                            </div>
+
+                            <!-- 記述式 -->
+                            <div id="essayAnswerSection" style="display: none;">
+                                <textarea id="essayAnswer" rows="8" placeholder="あなたの回答をここに記入してください"></textarea>
+                            </div>
+
+                            <div class="form-actions">
+                                <button id="nextQuestionBtn" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-arrow-right"></i> 次の問題へ
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- テスト結果画面 -->
+                <div id="resultView" class="view">
+                    <button id="backToTopicsFromResultBtn" class="btn btn-secondary mb-3">
+                        <i class="fas fa-arrow-left"></i> 小トピック一覧に戻る
+                    </button>
+
+                    <div class="card">
+                        <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <h2><i class="fas fa-trophy"></i> テスト結果</h2>
+                        </div>
+                        <div class="card-body">
+                            <div id="resultContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/security.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/scoring.js"></script>
+    <script src="js/question-generator.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/learner.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/debug.js"></script>
+    <script src="js/test-commands.js"></script>
+</body>
+</html>
