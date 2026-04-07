@@ -59,10 +59,58 @@ function showView(viewId) {
 }
 
 /**
- * アラート表示
+ * トースト通知を表示
  */
 function showAlert(message, type = 'info') {
-    alert(message);
+    // トーストコンテナがなければ作成
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-icon"><i class="fas ${icons[type] || icons.info}"></i></div>
+        <div class="toast-message">${sanitizeHTML(message).replace(/\n/g, '<br>')}</div>
+        <button class="toast-close" aria-label="閉じる"><i class="fas fa-times"></i></button>
+    `;
+
+    container.appendChild(toast);
+
+    // アニメーション開始
+    requestAnimationFrame(() => {
+        toast.classList.add('toast-visible');
+    });
+
+    // 閉じるボタン
+    toast.querySelector('.toast-close').addEventListener('click', () => {
+        dismissToast(toast);
+    });
+
+    // 自動で閉じる（エラーは長め）
+    const duration = type === 'error' ? 8000 : 4000;
+    setTimeout(() => {
+        dismissToast(toast);
+    }, duration);
+}
+
+function dismissToast(toast) {
+    if (toast.classList.contains('toast-hiding')) return;
+    toast.classList.add('toast-hiding');
+    toast.addEventListener('animationend', () => {
+        toast.remove();
+    });
 }
 
 /**
